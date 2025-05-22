@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from dotenv import load_dotenv
+from dateutil.relativedelta import relativedelta
 
 # Load environment variables from .env
 load_dotenv()
@@ -17,20 +18,21 @@ PHONE = os.getenv('PHONE')
 # File to store last run date
 LAST_RUN_FILE = 'last_run.txt'
 
-def already_ran_today():
+def ran_within_6_months():
     if not os.path.exists(LAST_RUN_FILE):
         return False
     with open(LAST_RUN_FILE, 'r') as f:
         last_run = f.read().strip()
-    return last_run == datetime.now().strftime('%Y-%m-%d')
+    last_run_date = datetime.strptime(last_run, '%Y-%m-%d')
+    return datetime.now() < last_run_date + relativedelta(months=6)
 
 def update_last_run():
     with open(LAST_RUN_FILE, 'w') as f:
         f.write(datetime.now().strftime('%Y-%m-%d'))
 
 def main():
-    if already_ran_today():
-        print('Script already ran today. Exiting.')
+    if ran_within_6_months():
+        print('Script ran within the last 6 months. Exiting.')
         return
 
     chrome_options = Options()
